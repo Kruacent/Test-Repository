@@ -1,0 +1,35 @@
+name: Release Auto
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        id: copy_step
+        run: |
+          mkdir -p ./bin/Release/
+          echo "dummy dll : " > ./bin/Release/KruacentExiled.dll
+          
+          DLL=$(find . -path "*/bin/Release/*KruacentExiled.dll" | head -n 1)
+          echo "DLL found : $DLL"
+          
+          echo "dll_path=$DLL" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release Draft
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # release v2.6.2
+        with:
+          tag_name: test-tag-${{ github.sha }}
+          name: "Test Draft Release"
+          draft: true
+          files: ${{ steps.copy_step.outputs.dll_path }}
+          generate_release_notes: false
